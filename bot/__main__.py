@@ -8,23 +8,22 @@ log = logging.getLogger(__name__)
 
 extensions = (
     'bot.core',
-    'bot.profitability',
-    'bot.sticky_embed',
 )
 
-def bot_task_callback(future: asyncio.Future):
-    if future.exception():
-        raise future.exception()
+def intents():
+    intents = discord.Intents.none()
+    intents.guilds = True
+
+    return intents
+
 
 
 async def run_bot():
     token = os.environ['TOKEN']
-    intents = discord.Intents.all()
-    intents.message_content = True
-    intents.members = True
+
     bot = commands.Bot(
         intents=intents,
-        command_prefix='!',
+        command_prefix=commands,
         slash_commands=True,
     )
     try:
