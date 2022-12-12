@@ -1,37 +1,25 @@
-import logging
-import textwrap
-from typing import Optional, Literal
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Optional, Literal
 
 import discord
-from discord import app_commands, Interaction
 from discord.ext import commands
 from discord.ext.commands import Context, Greedy
 
-log = logging.getLogger(__name__)
+if TYPE_CHECKING:
+    from ..bot import Bot
 
-class CoreCog(commands.Cog):
-    def __init__(self, bot: commands.Bot):
+
+class CoreSync(commands.Cog):
+
+    def __init__(self, bot: Bot):
         self.bot = bot
-
-    @app_commands.command(name='help', description="See the commands that this bot has to offer")
-    async def help_cmd(self, itx: Interaction):
-        title = "Bot Help Commands"
-
-        description = textwrap.dedent(
-            """For further help, use /cmd and see the hints that discord provides
-
-            **Available Commands**
-          
-        """)
-        embed = discord.Embed(title=title, description=description)
-
-        await itx.response.send_message(embed=embed, ephemeral=True)
 
     @commands.is_owner()
     @commands.guild_only()
     @commands.command()
     async def sync(self,
-            ctx: Context, guilds: Greedy[discord.Object], spec: Optional[Literal["~", "*", "^"]] = None) -> None:
+                   ctx: Context, guilds: Greedy[discord.Object], spec: Optional[Literal["~", "*", "^"]] = None) -> None:
         if not guilds:
             if spec == "~":
                 synced = await ctx.bot.tree.sync(guild=ctx.guild)
@@ -60,5 +48,3 @@ class CoreCog(commands.Cog):
         await ctx.send(f"Synced the tree to {ret}/{len(guilds)}.")
 
 
-async def setup(bot: commands.Bot):
-    await bot.add_cog(CoreCog(bot))

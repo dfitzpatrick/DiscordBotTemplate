@@ -3,27 +3,34 @@ import os
 from discord.ext import commands
 import asyncio
 import logging
+from . import config
+from .bot import Bot
+from dotenv import load_dotenv
 
+load_dotenv()
 log = logging.getLogger(__name__)
 
 extensions = (
     'bot.core',
 )
+required_envs = (
+    ('TOKEN', "The Bot Token", str),
+)
 
-def intents():
+
+def intents() -> discord.Intents:
     intents = discord.Intents.none()
     intents.guilds = True
-
     return intents
 
 
+async def bootstrap():
 
-async def run_bot():
+    config.assert_envs_exist(required_envs)
     token = os.environ['TOKEN']
-
-    bot = commands.Bot(
+    bot = Bot(
         intents=intents,
-        command_prefix=commands,
+        command_prefix=commands.when_mentioned,
         slash_commands=True,
     )
     try:
@@ -35,15 +42,5 @@ async def run_bot():
     finally:
         await bot.close()
 
-loop = asyncio.new_event_loop()
-try:
-    future = asyncio.ensure_future(
-        run_bot(),
-        loop=loop
-    )
-    future.add_done_callback(bot_task_callback)
-    loop.run_forever()
-except KeyboardInterrupt:
-    pass
-finally:
-    loop.close()
+asyncio.run(bootstrap())
+
